@@ -23,6 +23,10 @@ public class Shape implements DrawMe,Cloneable{
 	protected int startFinalY;
 	protected int endFinalX;
 	protected int endFinalY;
+	//protected int origiX;//移动原始点
+	//protected int origiY;
+	protected int moveX;//移动的距离
+	protected int moveY;
 	protected String txt;
 	//修正数值的
 	protected void fixPosition()
@@ -43,11 +47,51 @@ public class Shape implements DrawMe,Cloneable{
 		}
 		
 	}
+	public void setMoveOrig()
+	{
+		this.moveX = 0;
+		this.moveY = 0;
+	}
+	//移动的函数
+	public void move(int dX,int dY)
+	{
+		while(moveX !=dX)
+		{
+			if(moveX>dX)
+			{
+				startX--;
+				endX--;
+				moveX--;
+			}
+			else 
+			{
+				startX++;
+				endX++;
+				moveX++;
+			}
+		}
+		while( moveY !=dY)
+		{
+			if(moveY>dY)
+			{
+				startY--;
+				endY--;
+				moveY--;
+			}
+			else 
+			{
+				startY++;
+				endY++;
+				moveY++;
+			}
+		}	
+	}
 	public void SetStart(int x,int y)
 	{
 		startX = x;
 		startY = y;
 	}
+	
 	
 	//设置终点坐标
 	public void SetEnd(int x,int y)

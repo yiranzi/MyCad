@@ -24,14 +24,20 @@ public class ClickListener implements MouseListener {
 		//左键点击
 		if(e.getButton() == 1 && type == 1)
 		{
-			sendData = new MouseEventData(1,e.getX(),e.getY());
+			sendData = new MouseEventData(type,e.getX(),e.getY());
 			
 		}
 		
 		//左键抬起
 		if(e.getButton() == 1 && type == 2)
 		{
-			sendData = new MouseEventData(2,e.getX(),e.getY());
+			sendData = new MouseEventData(type,e.getX(),e.getY());
+		}
+		
+		//左键click
+		if(e.getButton() == 1 && type == 4)
+		{
+			sendData = new MouseEventData(type,e.getX(),e.getY());
 		}
 		control.SendMouseEvent(sendData);
 		

@@ -42,6 +42,7 @@ public class Model {
 	private int commandType ;// 0为选择1为画
 	private BufferData bufferData;
 	private ArrayList<Shape> chooseBoxs = new ArrayList<Shape>();
+	private int mayMove = 0;//检测移动的变量
 	
 	// 之前做的内部类..现在直接拿到外面去了.因为没觉得内部类描述这个有啥用.
 	// 还是拿回来,做缓存的内部类使用应该不错.用来保存所有可能的设置属性.
@@ -92,13 +93,11 @@ public class Model {
 
 		});
 		
-		hashShape.put("drawrectbox", new ShapeBox() {
-
+		hashShape.put("drawrectbox", new ShapeBox() {		
 			@Override
 			public void Draw(Graphics g) {
+				//这个图形不需要绘制外边框box
 			}
-			
-
 		});
 		
 		hashShape.put("drawstring", new ShapeInside() {
@@ -114,15 +113,11 @@ public class Model {
 
 		});
 		
-		hashShape.put("drawstring", new ShapeBox() {
-
+		hashShape.put("drawstringbox", new ShapeBox() {
 			@Override
-			public void SetPosition() {
-				// TODO Auto-generated method stub
-				super.SetPosition();
+			public void Draw(Graphics g) {
+				//这个图形不需要绘制外边框box
 			}
-			
-
 		});
 
 		hashShape.put("drawline", new ShapeInside() {
@@ -155,16 +150,10 @@ public class Model {
 		});
 		
 		hashShape.put("drawlinebox", new ShapeBox() {
-
-			
-
 			@Override
-			public void SetPosition() {
-				// TODO Auto-generated method stub
-				super.SetPosition();
+			public void Draw(Graphics g) {
+				super.Draw(g);
 			}
-			
-
 		});
 		
 		hashShape.put("drawbox", new ShapeBox(true) {
@@ -234,17 +223,55 @@ public class Model {
 		}
 	}
 
-	//根据按钮设置是否开启框选模式.
+	//设置是否开启什么模式
 	private void SetCommandType(String buttonName)
 	{
 		if(buttonName == "drawbox")
 		{
 			commandType = 0;
+			//小框子
 		}
-		else
+		else if(buttonName == "move")
+		{
+			commandType = 2;
+			StopChoosing();
+			//小手
+		}
+		else//绘制的图标
 		{
 			commandType = 1;
+			CancelChoose();
+			current = null;
+			mayMove = 0;
+			StopChoosing();
+			UpdataView();
+			
+			//小画笔
 		}
+	}
+	
+	//遍历所有的选框.看是否落在上面
+	private void CurrentPointIfChoose()
+	{	
+		ShapeBox testPoint = (ShapeBox)current;
+		ShapeBox drawshape;
+		for(Shape shape:choose.keySet())
+		{
+			drawshape = (ShapeBox)choose.get(shape);
+			if(testPoint.IfCollision(drawshape))
+			{
+				for(Shape shape2:choose.keySet())
+				{
+					//重置移动的初始位置
+					shape2.setMoveOrig();
+					choose.get(shape2).setMoveOrig();				
+				}			
+				mayMove = 2;//按下之后去看是否发生了移动
+				return;
+			}
+		}
+		mayMove = 0;
+		CancelChoose();//如果没有shift,如果有shift去做排除这个元素的操作.	
 	}
 
 	//接收鼠标事件的接口
@@ -257,21 +284,27 @@ public class Model {
 		//左键单击4
 		
 		//排除掉无意义的操作
-		if(current == null && mouseData.Get(0)!=1)
+		if(current == null && mouseData.Get(0)!=1 && mouseData.Get(0)!=4)
 		{
 			return;
 		}
 		
 		UpDataLocal(mouseData.Get(1),mouseData.Get(2));//首先鼠标读入缓存作为end	
 		
-		if(current == null)
+		//不是点击操作
+		//if(current == null)//&& mouseData.Get(0)!=4
+		if(current == null && mouseData.Get(0)!=4)
 		{
 			//左键按下
 			if(mouseData.Get(0) == 1)
-			{
-				//绘图 or 绘制选择框
+			{	
+				//绘图he绘制选择框
 				CreateShape();
-				BufferToShapeWhenDraw();//更新end坐标数据
+				if(mayMove == 1)//如果可能会移动.//先判定落点是不是在已选中的图形上
+				{
+					CurrentPointIfChoose();
+				}
+				BufferToShape();//更新end坐标数据
 			}
 		}
 		else
@@ -281,30 +314,32 @@ public class Model {
 			{
 				//1更新end坐标
 				//2current值为空
-				BufferToShapeWhenDraw();//更新end坐标数据
+				BufferToShape();//更新end坐标数据
 				LeftRelease();
 			}
 			//左键按下并且移动
 			if(mouseData.Get(0) == 3)
 			{
-				//只需要更新end坐标
-				BufferToShapeWhenDraw();//更新end坐标数据
+				if(mayMove == 2)
+				{
+					SetCommandType("move");//确定是在移动.
+					mayMove = 0;
+				}
+				BufferToShape();
 			}
 			
 			//左键单击
 			if(mouseData.Get(0) == 4)
 			{
-				BufferToShapeWhenDraw();//更新end坐标数据
+				System.out.println("click");
+				//BufferToShape();//更新end坐标数据
 				//点击都是无意义操作.
 				//1创建的时候点击.清除创建
+				//draws.
 				//2框选的时候点击,选择其中的一个.
-
-			}
-			
-			
-		}
-		
-		
+				//if()
+			}		
+		}	
 		//update图像
 		UpdataView();
 	}
@@ -359,13 +394,34 @@ public class Model {
 		current.SetColor();
 		current.SetString(bufferData.txt);
 	}
+	
+	//将缓存数据更新给shape
+	private void BufferToShape()
+	{
+		if(commandType == 2)BufferToShapeWhenMove();
+		else BufferToShapeWhenDraw();
+	}
 
 	// 设置终点坐标
 	private void BufferToShapeWhenDraw() {
 		current.SetEnd(bufferData.endX, bufferData.endY);
-		if(commandType!=0)//如果没有在选择状态就一同更新box(选中状态没有box)
+		if(commandType!=0)//如果没有在选择状态就一同更新box
 		{
 			draws.get(current).SetEnd(bufferData.endX, bufferData.endY);	
+		}
+	}
+	
+	//更新所有选中单位的坐标,用坐标变化绝对值来做.
+	//绝对值的计算方式是用现在的坐标减去原始坐标.
+	private void BufferToShapeWhenMove() {
+		
+		int dertaX = bufferData.endX - bufferData.startX;
+		int dertaY = bufferData.endY - bufferData.startY;
+		//遍历并更新.
+		for(Shape shape:choose.keySet())
+		{
+			shape.move(dertaX, dertaY);
+			choose.get(shape).move(dertaX, dertaY);;
 		}
 	}
 
@@ -382,21 +438,34 @@ public class Model {
 		}
 		
 	}
+	
+	//取消掉选择
+	private void CancelChoose()
+	{
+		SetBoxVisible(false);
+		choose.clear();
+	}
 
 	// 当松开手指的时候
 	private void LeftRelease() {
-		if( commandType == 1)
+		current = null;
+		if( commandType == 1)//绘制
 		{
-			current = null;
+			//current = null;
 		}
-		if( commandType == 0)
+		else if (commandType == 2)//移动
 		{
-			
+			commandType = 0;
+			mayMove = 1;//仍然可以继续点击移动
+			//current = null;
+		}
+		else if( commandType == 0)//选择
+		{	
 			//1判定交集
 			for(int i =0;i<chooseBoxs.size();i++)
 			{
-				SetBoxVisible(false);//如果没有按下shift就清空
-				choose.clear();
+				CancelChoose();//如果没有按下shift就清空,可以在前面就判定好
+			
 				ShapeBox choosebox = (ShapeBox)chooseBoxs.get(i);
 				for(Shape shape:draws.keySet())
 				{
@@ -404,23 +473,28 @@ public class Model {
 					if(choosebox.IfCollision(testBox))
 					{
 						//2添加到elements
-						System.out.println(shape);
-						System.out.println(draws.get(shape));
-						choose.put(shape, draws.get(shape));				
+						choose.put(shape, draws.get(shape));	
+						mayMove = 1;//可能移动发生
 					}
-				}
-				
+				}				
 			}		
 					
 			//3将这些box所在的父级的visible打开?(如果为单机操作,那么..遍历的时候有就返回)
 			SetBoxVisible(true);
 			//4移除掉选框为null?(如果没有shift的话,有的话也应该移除)
-			chooseBoxs.clear();
-			current = null;
+			StopChoosing();
+			//current = null;
 		}
 		
 	}
 	
+	//停止框选过程
+	private void StopChoosing()
+	{
+		chooseBoxs.clear();
+	}
+	
+	//控制box显隐
 	private void SetBoxVisible(boolean visible)
 	{
 		if(choose!=null)
@@ -434,15 +508,10 @@ public class Model {
 		
 	}
 	
-// 一个临时的内部接口,保存到数据中
+	// 一个临时的内部接口,保存到数据中
 	private void SaveToShapes(Shape picture, Shape box) {
 		draws.put(picture, box);
 	}
-
-//	public void ColliderTest(Shape a,Shape b)
-//	{
-//		
-//	}
 	
 	//请求view更新
 	private void UpdataView() {
