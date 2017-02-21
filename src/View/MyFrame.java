@@ -40,6 +40,11 @@ public class MyFrame extends JFrame {
 		panels.put("buttonpanel", panel);
 		add(panel, BorderLayout.NORTH);
 		
+//		panel = new MyPanel();
+//		panel.setBackground(new Color(100,25,255));
+//		panels.put("colorchooser", panel);
+//		add(panel, BorderLayout.NORTH);
+		
 		setSize(width,height);
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		setResizable(true);

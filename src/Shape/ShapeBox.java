@@ -1,16 +1,19 @@
 package Shape;
 
 import java.awt.Graphics;
-
-import Model.Data;
-
 public class ShapeBox extends Shape {
 	private int min;
 	private int max;
-	private boolean visible = false;
+	private boolean visible = true;
 	public ShapeBox()
 	{
 		
+	}
+	
+	public ShapeBox(int x,int y)
+	{
+		startX = endX = x;
+		startY = endY = y;
 	}
 	
 	public ShapeBox(boolean visible)
@@ -54,6 +57,11 @@ public class ShapeBox extends Shape {
 		this.visible = visible;
 	}
 	
+	public boolean GetBoxVisible()
+	{
+		return visible;
+	}
+
 	@Override
 	public void Draw(Graphics g) {
 		// TODO Auto-generated method stub

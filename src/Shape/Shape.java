@@ -1,6 +1,9 @@
 package Shape;
 
+import java.awt.BasicStroke;
+import java.awt.Color;
 import java.awt.Graphics;
+import java.awt.Graphics2D;
 import java.util.HashMap;
 
 import Model.Data;
@@ -28,6 +31,10 @@ public class Shape implements DrawMe,Cloneable{
 	protected int moveX;//移动的距离
 	protected int moveY;
 	protected String txt;
+	
+	//粗细
+	protected float bold;
+	protected Color color;
 	//修正数值的
 	protected void fixPosition()
 	{
@@ -46,6 +53,10 @@ public class Shape implements DrawMe,Cloneable{
 			endFinalY = startY;
 		}
 		
+	}
+	public Shape() {
+		// TODO Auto-generated constructor stub
+		System.out.println("shape new");
 	}
 	public void setMoveOrig()
 	{
@@ -101,15 +112,15 @@ public class Shape implements DrawMe,Cloneable{
 	}
 	
 	//设置颜色
-	public void SetColor()
+	public void SetColor(Color color)
 	{
-		
+		this.color = color;
 	}
 	
 	//设置粗细
-	public void SetBold()
+	public void SetBold(float bold)
 	{
-		
+		this.bold = bold;
 	}
 	
 	//设置String
@@ -118,18 +129,13 @@ public class Shape implements DrawMe,Cloneable{
 		this.txt = txt;
 	}
 		
-	public Shape() {
-		// TODO Auto-generated constructor stub
-		System.out.println("shape new");
-	}
-
-
-	
 	//执行draw的接口
 	@Override
 	public void Draw(Graphics g) {
 		//这里面天上颜色,设置上粗细等通用方法.
 		fixPosition();
+		g.setColor(color);
+		((Graphics2D)g).setStroke(new BasicStroke(bold));
 	}
 	
 	@Override

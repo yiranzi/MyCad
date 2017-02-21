@@ -9,55 +9,45 @@ import CADMain.CAD;
 
 
 public class ClickListener implements MouseListener {
-	private MouseEventData sendData;
+
 	private Control control;
-	//左键点击1
-	//左键抬起2
-	//移动 3
-	//左键单击4
+
 	public ClickListener()
 	{
 		control = CAD.control;
 	}
-	private void SendData(MouseEvent e,int type)
-	{
-		//左键点击
-		if(e.getButton() == 1 && type == 1)
-		{
-			sendData = new MouseEventData(type,e.getX(),e.getY());
-			
-		}
-		
-		//左键抬起
-		if(e.getButton() == 1 && type == 2)
-		{
-			sendData = new MouseEventData(type,e.getX(),e.getY());
-		}
-		
-		//左键click
-		if(e.getButton() == 1 && type == 4)
-		{
-			sendData = new MouseEventData(type,e.getX(),e.getY());
-		}
-		control.SendMouseEvent(sendData);
-		
-	}
+	
 	@Override
 	public void mouseClicked(MouseEvent e) {
 		// TODO Auto-generated method stub
-		SendData(e,4);
+		if(e.getButton()==3 && e.getClickCount() ==2)
+		{
+			control.SendData(6,e);
+		}
+		if(e.getButton()==1)
+		{
+			control.SendData(5,e);
+		}
+		
 	}
 
 	@Override
 	public void mousePressed(MouseEvent e) {
 		// TODO Auto-generated method stub
-		SendData(e,1);
+		if(e.getButton()==1)
+		{
+			control.SendData(1,e);
+		}
+		
 	}
 
 	@Override
 	public void mouseReleased(MouseEvent e) {
 		// TODO Auto-generated method stub
-		SendData(e,2);
+		if(e.getButton()==1)
+		{
+			control.SendData(4,e);
+		}
 	}
 
 	@Override
