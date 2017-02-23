@@ -12,9 +12,6 @@ public class MotionListener implements MouseMotionListener {
 	{
 		control = CAD.control;
 	}
-	//左键点击1
-	//左键抬起2
-	//左键按下移动 3
 	
 	@Override
 	public void mouseDragged(MouseEvent e) {

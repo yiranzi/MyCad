@@ -27,11 +27,8 @@ public class MouseEventData {
 				answer = this.posY;
 				break;
 			default:
+				System.out.println("type not found");
 				break;
-		}
-		if(answer == -1)
-		{
-			System.out.println("type not found");
 		}
 		return answer;
 		

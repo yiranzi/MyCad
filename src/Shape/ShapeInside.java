@@ -1,39 +1,162 @@
 package Shape;
 
+import java.awt.BasicStroke;
+import java.awt.Color;
 import java.awt.Graphics;
+import java.awt.Graphics2D;
 
-import Model.Data;
+//使用的时候
+//1默认必须调用父类的draw方法.
+//2需要重写drawshape方法
+//3drawatt 和 fix 如果不使用可以覆盖掉
+//4默认所有shape都需要有drawbox,如果不需要外边框的绘制,可以覆盖掉
+//5现在把这个放在了必须重写的drawshape中.因为也有一定相关性
+//5drawbox需要根据情况重写
 
-public class ShapeInside extends Shape {
-	//定义一个子类
-	//private ShapeBox outBox = new ShapeBox();
-	//private boolean boxVisible = false;
+public class ShapeInside extends MyShape implements Cloneable{
+	private ShapeBox outsideBox; 
 	
-//	@Override
-//	public void Draw(Graphics g, Data d) {
-//		// TODO Auto-generated method stub
-//		super.Draw(g, d);
-//		SetBoxStart(startX,startY);
-//		SetBoxEnd(endX,endY);
-//		if(boxVisible)
-//		{
-//			outBox.Draw(g, d);
-//		}
-//	}
-//
-//	//提供了设置shape范围的内部接口.
-//	private void SetBoxStart(int startX,int startY)
+	protected int moveX;//移动的距离
+	protected int moveY;
+	
+	private boolean isDrug = true;
+	
+	protected String txt;
+	protected float bold;
+	protected Color color;
+	
+	public ShapeInside()
+	{
+		
+	}
+	//构造的时候,告知这种形状是否通过拖拽绘制
+	public ShapeInside(boolean isDrug)
+	{
+		this.isDrug = isDrug;
+	}
+	
+	@Override
+	public void SetStart(int x, int y) {
+		// TODO Auto-generated method stub
+		super.SetStart(x, y);
+		outsideBox.SetStart(x, y);
+	}
+	
+	@Override
+	public void SetEnd(int x, int y) {
+		// TODO Auto-generated method stub
+		super.SetEnd(x, y);
+		outsideBox.SetEnd(x, y);
+	}
+	
+
+	//当移动这个物体的时候.重置他的坐标
+	public final void setMoveOrig()
+	{
+		this.moveX = 0;
+		this.moveY = 0;
+	}
+	
+	//移动的函数
+	public final void move(int dX,int dY)
+	{
+		while(moveX !=dX)
+		{
+			if(moveX>dX)
+			{
+				startX--;
+				endX--;
+				moveX--;
+			}
+			else 
+			{
+				startX++;
+				endX++;
+				moveX++;
+			}
+		}
+		while( moveY !=dY)
+		{
+			if(moveY>dY)
+			{
+				startY--;
+				endY--;
+				moveY--;
+			}
+			else 
+			{
+				startY++;
+				endY++;
+				moveY++;
+			}
+		}
+		outsideBox.SetStart(startX, startY);
+		outsideBox.SetEnd(endX, endY);
+	}
+	
+	@Override
+	public void Draw(Graphics g) {
+		super.Draw(g);	
+		DrawAttribute(g);//在基础上会设置自定义属性
+		outsideBox.Draw(g);//默认所有shape都有.box的绘制我们暂时有这里调用	
+	}	
+	
+	protected void DrawAttribute(Graphics g) {
+		// TODO Auto-generated method stub
+		g.setColor(color);
+		((Graphics2D)g).setStroke(new BasicStroke(bold));
+	}
+	
+	//设置颜色
+	public void SetColor(Color color)
+	{
+		this.color = color;
+	}
+	
+	//设置粗细
+	public void SetBold(float bold)
+	{
+		this.bold = bold;
+	}
+	
+	//设置String
+	public void SetString(String txt)
+	{
+		this.txt = txt;
+	}
+	
+	
+//	private void SetBoxPos()
 //	{
-//		outBox.SetStart(startX, startY);
+//		outsideBox.SetPoSAndSize(startX,startY,endX,endY);
 //	}
-//	
-//	private void SetBoxEnd(int endX,int endY)
-//	{
-//		outBox.SetEnd(endX, endY);
-//	}
-//	
-//	public void SetBoxVisible(boolean visible)
-//	{
-//		boxVisible = visible;
-//	}
+	
+	public boolean GetIsDrug() {
+		// TODO Auto-generated method stub
+		return isDrug;
+	}
+	@Override
+	public ShapeInside clone(){
+		ShapeInside shapeinside = null;  
+        try {  
+        	shapeinside = (ShapeInside) super.clone();  
+        } catch (CloneNotSupportedException e) {  
+            e.printStackTrace();  
+        }          
+        return shapeinside;
+	}
+	
+	@Override
+	protected void DrawShape(Graphics g) {
+		// TODO Auto-generated method stub
+		
+	}  	
+	
+	//如果能实现深拷贝,这个就不需要了,就可以自动拷贝,但是把地址get给外面进行保存.
+	public void SetBox(ShapeBox s)
+	{
+		this.outsideBox = s;
+	}
+	
+	
 }

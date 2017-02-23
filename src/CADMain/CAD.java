@@ -1,14 +1,6 @@
 package CADMain;
-
-import java.awt.BorderLayout;
-import java.awt.Color;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.util.ArrayList;
-import java.util.HashMap;
-
 import javax.swing.JButton;
-import javax.swing.JColorChooser;
 import javax.swing.JFrame;
 import javax.swing.JPanel;
 
@@ -29,15 +21,10 @@ public class CAD {
 	private static MyFrame frame;
 
 	private JButton colorChosser = new JButton();
-	// JFrame frame;
-
-	// 这个hash完全没有用.别乱用.这个数据根本不需要获得.用数字更方便
-	// private HashMap<String,JButton> commandButtons = new
-	// HashMap<String,JButton>();
 	private ArrayList<JButton> settingButtons = new ArrayList<JButton>();
 	private ArrayList<JButton> drawButtons = new ArrayList<JButton>();
 	// private String[] buttonName = {"hello","world","shape","create"};
-	private String[] settingButtonName = { "draw 1", "draw 222", "增大粗细", "减小粗细", "颜色选择" };
+	private String[] settingButtonName = { "帮助文本", "增大粗细", "减小粗细", "颜色选择" };
 	private String[] drawButtonName = { "drawcircle", "drawrect", "drawstring", "drawline", "drawbox" };
 
 	// 初始化原始的操作按钮
@@ -89,8 +76,8 @@ public class CAD {
 	}
 
 	public static void main(String[] args) {
-		int width = 1000;
-		int height = 500;
+		int width = 1024;
+		int height = 768;
 		CAD cad = new CAD(width, height);
 	}
 

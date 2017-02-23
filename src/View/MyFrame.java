@@ -3,18 +3,15 @@ package View;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Graphics;
-import java.awt.Shape;
 import java.util.HashMap;
 
 import javax.swing.JFrame;
 import javax.swing.JPanel;
 
 import CADMain.CAD;
-import Model.Data;
 import Model.Model;
 import Mouse.ClickListener;
 import Mouse.MotionListener;
-import Shape.DrawMe;
 
 //布局相关的内容
 public class MyFrame extends JFrame {
@@ -59,7 +56,9 @@ public class MyFrame extends JFrame {
 		return panels.get(name);
 	}
 	
-		
+	//view调用repaint后.会走到这边.这边
+	//1)获得绘制数据.
+	//2)进行绘制
 	private class MyPanel extends JPanel {
 		@Override
 		protected void paintComponent(Graphics g) {
