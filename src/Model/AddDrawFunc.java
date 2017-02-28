@@ -4,6 +4,7 @@ import java.awt.Graphics;
 import java.util.ArrayList;
 import java.util.HashMap;
 
+import Shape.ChooseBox;
 import Shape.MyShape;
 import Shape.ShapeBox;
 import Shape.ShapeInside;
@@ -23,6 +24,22 @@ public class AddDrawFunc {
 			protected void DrawShape(Graphics g) {
 				// TODO Auto-generated method stub
 				g.drawRect(startFinalX, startFinalY, endFinalX - startFinalX, endFinalY - startFinalY);		
+			}
+
+			@Override
+			protected void fixPosition() {
+				// TODO Auto-generated method stub
+				super.fixPosition();
+				if(endX<startX)
+				{
+					startFinalX = endX;
+					endFinalX = startX;
+				}
+				if(endY<startY)
+				{
+					startFinalY = endY;
+					endFinalY = startY;
+				}
 			}
 
 		});
@@ -63,14 +80,60 @@ public class AddDrawFunc {
 				// TODO Auto-generated method stub
 				g.drawOval(startFinalX, startFinalY, endFinalX - startFinalX, endFinalY - startFinalY);
 			}
+			@Override
+			protected void fixPosition() {
+				// TODO Auto-generated method stub
+				super.fixPosition();
+				if(endX<startX)
+				{
+					startFinalX = endX;
+					endFinalX = startX;
+				}
+				if(endY<startY)
+				{
+					startFinalY = endY;
+					endFinalY = startY;
+				}
+			}
 		});
 
-		//绘制矩形选框
+		//绘制外边框
 		hashShape.put("drawbox", new ShapeBox() {
+
 			@Override
-			protected void DrawShape(Graphics g) {
+			protected void fixPosition() {
 				// TODO Auto-generated method stub
-				g.drawRect(startFinalX, startFinalY, endFinalX - startFinalX, endFinalY - startFinalY);
+				super.fixPosition();
+				if(endX<startX)
+				{
+					startFinalX = endX;
+					endFinalX = startX;
+				}
+				if(endY<startY)
+				{
+					startFinalY = endY;
+					endFinalY = startY;
+				}
+			}
+		});
+		
+		//绘制外边框
+		hashShape.put("choosebox", new ChooseBox() {
+
+			@Override
+			protected void fixPosition() {
+				// TODO Auto-generated method stub
+				super.fixPosition();
+				if(endX<startX)
+				{
+					startFinalX = endX;
+					endFinalX = startX;
+				}
+				if(endY<startY)
+				{
+					startFinalY = endY;
+					endFinalY = startY;
+				}
 			}
 		});
 		return hashShape;

@@ -1,23 +1,24 @@
 package Shape;
 
+import java.awt.BasicStroke;
+import java.awt.Color;
 import java.awt.Graphics;
+import java.awt.Graphics2D;
 public class ShapeBox extends MyShape implements Cloneable{
 	private boolean visible = false;
 	public ShapeBox()
 	{
-		
+		color = Color.BLACK;
+		bold = 1;
 	}
 	
-	public ShapeBox(int x,int y)
-	{
-		startX = endX = x;
-		startY = endY = y;
-	}
+//	public ShapeBox(int x,int y)
+//	{
+//		startX = endX = x;
+//		startY = endY = y;
+//	}
 //	
-	public ShapeBox(boolean visible)
-	{
-		this.visible = visible;
-	}
+
 //	//用于根据绘制点调整框体大小的
 //	public void SetPosition()
 //	{
@@ -28,21 +29,23 @@ public class ShapeBox extends MyShape implements Cloneable{
 	//碰撞体检测
 	public boolean IfCollision(ShapeBox box)
 	{	
-		if( Inside(startX,startY,box))return true;//左上
-		if( Inside(this.endX ,this.startY,box))return true;//右上
-		if( Inside(this.startX ,this.endY,box))return true;//左下
-		if( Inside(this.endX ,this.endY,box))return true;//右下
-		if( Inside(box.startX,box.startY,this))return true;//左上
-		if( Inside(box.endX ,box.startY,this))return true;//右上
-		if( Inside(box.startX ,box.endY,this))return true;//左下
-		if( Inside(box.endX ,box.endY,this))return true;//右下
+		fixPosition();//修正坐标
+		box.fixPosition();
+		if( Inside(startFinalX,startFinalY,box))return true;//左上
+		if( Inside(this.endFinalX ,this.startFinalY,box))return true;//右上
+		if( Inside(this.startFinalX ,this.endFinalY,box))return true;//左下
+		if( Inside(this.endFinalX ,this.endFinalY,box))return true;//右下
+		if( Inside(box.startFinalX,box.startFinalY,this))return true;//左上
+		if( Inside(box.endFinalX ,box.startFinalY,this))return true;//右上
+		if( Inside(box.startFinalX ,box.endFinalY,this))return true;//左下
+		if( Inside(box.endFinalX ,box.endFinalY,this))return true;//右下
 		return false;	
 	}
 	
 	public boolean Inside(int x,int y,ShapeBox box)
 	{
 		boolean isInside = false;
-		if(x>=box.startX && x<=box.endX && y>=box.startY && y<=box.endY)
+		if(x>=box.startFinalX && x<=box.endFinalX && y>=box.startFinalY && y<=box.endFinalY)
 		{
 			isInside = true; 
 		}
@@ -59,46 +62,54 @@ public class ShapeBox extends MyShape implements Cloneable{
 		return visible;
 	}
 
-//	//父类给他设置的地方
-//	public void SetPoSAndSize(int x, int y, int width, int height) {
-//		// TODO Auto-generated method stub
-//		if(visible)
-//		{
-//			this.startX = x;
-//			this.startY = y;
-//			this.endX = 		
-//		}
-//	}
-
 	@Override
 	protected void fixPosition() {
 		// TODO Auto-generated method stub
+		System.out.println("shapebox的fixposition");
 		super.fixPosition();
-		startFinalX = Math.abs(startFinalX);
-		startFinalY = Math.abs(startFinalY);
-		endFinalX = Math.abs(endFinalX);
-		endFinalY = Math.abs(endFinalY);
+		//4象限
+		if(endX<startX)
+		{
+			startFinalX = endX;
+			endFinalX = startX;
+		}
+		if(endY<startY)
+		{
+			startFinalY = endY;
+			endFinalY = startY;
+		}
 	}
  
 	@Override
 	protected void DrawShape(Graphics g) {
 		// TODO Auto-generated method stub
+		g.drawRect(startFinalX, startFinalY, endFinalX-startFinalX, endFinalY-startFinalY);
+	}
+	
+	
+
+	@Override
+	public void Draw(Graphics g) {
 		if(visible)
 		{
-			g.drawRect(startFinalX, startFinalY, endFinalX-startFinalX, endFinalY-startFinalY);
-		}
+			super.Draw(g);
+		}	
 	}
 
 	@Override
 	public ShapeBox clone(){
-		ShapeBox shapebox = null;  
+		ShapeBox shapebox = null; 
+//		shapebox = (ShapeBox) super.clone();
         try {  
         	shapebox = (ShapeBox) super.clone();  
-        } catch (CloneNotSupportedException e) {  
+        } 
+        catch (CloneNotSupportedException e) {  
             e.printStackTrace();  
         }          
         return shapebox;
 	}
+
+
 
 
 }

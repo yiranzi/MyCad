@@ -14,16 +14,14 @@ import java.util.HashMap;
 import javax.swing.JButton;
 import javax.swing.JColorChooser;
 import javax.swing.JOptionPane;
-
-import CADMain.CAD;
+import CADMain.CAD;//为了获得frame
 import Mouse.MouseEventData;
-import Shape.DrawMe;
+import Shape.ChooseBox;
 import Shape.MyShape;
 import Shape.ShapeBox;
 import Shape.ShapeInside;
 import View.View;
 
-import javax.swing.JButton;
 
 public class Model {
 	// 保存绘制数据的容器
@@ -43,10 +41,10 @@ public class Model {
 	private String nowDrawWhat = "drawline";// 用户当前点击的是什么画图功能.
 
 	private BufferData bufferData;
-	//因为选区需要进行碰撞检测,我们还是使用box类型
-	//那么就需要...为box添加一个visible的属性.进行设置
-	private ArrayList<ShapeBox> chooseRanges = new ArrayList<ShapeBox>();
-	private Frame frame;
+	// 因为选区需要进行碰撞检测,我们还是使用box类型
+	// 那么就需要...为box添加一个visible的属性.进行设置
+	private ArrayList<ChooseBox> chooseRanges = new ArrayList<ChooseBox>();
+	private Frame frame;//为了添加上消息弹窗
 
 	// 缓存内部类.
 	class BufferData {
@@ -57,23 +55,94 @@ public class Model {
 		private String txt = "txt";
 		private float bold = 1;
 		private Color color = Color.black;
-		
-		//设置缓存属性
-		private void SetColor(Color color)
-		{
-			if(color!=null)
-			{
+
+		// 设置缓存属性
+		private void SetColor(Color color) {
+			if (color != null) {
 				this.color = color;
 			}
 		}
 		
-		//提交缓存属性
-		private void BufferToAttribute() {
+		private void BufferAttrToShape()
+		{
+			ShapeInside s = (ShapeInside) current;
+			s.SetBold(bufferData.bold);
+			s.SetColor(bufferData.color);
+			s.SetString(bufferData.txt);
+		}
+
+		// 提交缓存属性
+		private void BufferAttrToChoosen() {
+			
 			for (ShapeInside shape : choosenShapeInside.keySet()) {
 				shape.SetBold(bufferData.bold);
 				shape.SetColor(bufferData.color);
 			}
 		}
+
+		// new的时候保存
+		private void SaveBufferStart() {
+			bufferData.startX = bufferData.endX;
+			bufferData.startY = bufferData.endY;
+			// SetEndPos(endX,endY);
+		}
+
+		// 开始任何流程前保存重点坐标
+		private void SaveBufferEnd(int endX, int endY) {
+			bufferData.endX = endX;
+			bufferData.endY = endY;
+			// SetEndPos(endX,endY);
+		}
+
+		// // 设置终点坐标(每次都调用,坐标设置)
+		// private void BufferToShapeWhenChoosing() {
+		// current.SetEnd(bufferData.endX, bufferData.endY);
+		// }
+		
+		// 更新shape起点坐标.在new的时候调用一次
+		private void BufferToShapeWhenNew() {
+			// 设置起点坐标
+			current.SetStart(bufferData.endX, bufferData.endY);
+			
+		}
+
+		// 绘制或者框选的更新
+		private void BufferToShapeWhenDrug() {
+			current.SetEnd(bufferData.endX, bufferData.endY);
+			// draws.get(current).SetEnd(bufferData.endX, bufferData.endY);
+		}
+		
+		// 更新shape起点坐标.在new的时候调用一次
+		private void BufferToShapeStartDiff(int width,int height) {
+			// 设置起点坐标
+			ShapeInside shapeInside= (ShapeInside)current;
+			shapeInside.SetStartDiff(bufferData.endX, bufferData.endY,width,height);
+			
+		}
+
+		// 绘制或者框选的更新
+		private void BufferToShapeEndDiff(int width,int height) {
+			ShapeInside shapeInside= (ShapeInside)current;
+			shapeInside.SetEndDiff(bufferData.endX, bufferData.endY,width,height);
+			// draws.get(current).SetEnd(bufferData.endX, bufferData.endY);
+		}
+
+		// // 设置终点坐标(每次都调用,坐标设置)
+		// private void BufferToShapeWhenChoosing() {
+		// current.SetEnd(bufferData.endX, bufferData.endY);
+		// }
+
+		//移动的更新
+		private void BufferToShapeWhenMove() {
+
+			int dertaX = bufferData.endX - bufferData.startX;
+			int dertaY = bufferData.endY - bufferData.startY;
+			// 遍历并更新.
+			for (ShapeInside shape : choosenShapeInside.keySet()) {
+				shape.move(dertaX, dertaY);
+			}
+		}
+
 	}
 
 	public Model() {
@@ -83,7 +152,7 @@ public class Model {
 		frame = CAD.GetFrame();
 
 	}
-	
+
 	// 设置view
 	public void SetView(View view) {
 		this.view = view;
@@ -95,7 +164,7 @@ public class Model {
 		AddSettingButton(settingButtons);// 添加设置按钮
 	}
 
-	//设置绘制方法
+	// 设置绘制方法
 	private void SetDrawFunc() {
 		hashShape = AddDrawFunc.SetDrawFunc(hashShape);
 	}
@@ -134,7 +203,7 @@ public class Model {
 			@Override
 			public void actionPerformed(ActionEvent e) {
 				bufferData.bold++;
-				bufferData.BufferToAttribute();
+				bufferData.BufferAttrToChoosen();
 				UpdataView();
 			}
 		});
@@ -145,7 +214,7 @@ public class Model {
 				if (bufferData.bold > 2) {
 					bufferData.bold--;
 				}
-				bufferData.BufferToAttribute();
+				bufferData.BufferAttrToChoosen();
 				UpdataView();
 			}
 		});
@@ -160,7 +229,7 @@ public class Model {
 				if (chooseColor != null) {
 					bufferData.SetColor(chooseColor);
 				}
-				bufferData.BufferToAttribute();
+				bufferData.BufferAttrToChoosen();
 				UpdataView();
 			}
 		});
@@ -175,7 +244,7 @@ public class Model {
 
 				@Override
 				public void actionPerformed(ActionEvent e) {
-					//可以统一添加吗?那么执行顺序是什么呢
+					// 可以统一添加吗?那么执行顺序是什么呢
 					UpdataView();
 				}
 			});
@@ -185,14 +254,20 @@ public class Model {
 	// 按钮引起绘制切换
 	private void SetCommandType(String buttonName) {
 		// 如果选中了绘图,点击选择
-		if (buttonName == "drawbox" && commandType == "todraw") {
+		if (commandType == "drawclick") {
+			commandType = "todraw";
+			current = null;
+		}
+		if (buttonName == "drawbox" && (commandType == "todraw")) {
 			commandType = "tochoose";
+			current = null;
 		} else if (buttonName != "drawbox")// 非框选按钮(选中了绘图按钮)
 		{
 
 			// 如果当前为要绘制
 			if (commandType == "tochoose") {
 				commandType = "todraw";
+				current = null;
 			}
 			// 如果已经选中了东西
 			else if (commandType == "choosed") {
@@ -203,76 +278,52 @@ public class Model {
 			}
 		}
 	}
+
 	
-//	private boolean GetIfDrugDraw(Shape b)
-//	{
-//		if(!b.GetIsDrug())
-//		{
-//			commandType = "drawclick";
-//			if (nowDrawWhat == "drawstring") {
-//				String inputValue = JOptionPane.showInputDialog("Please input a value");
-//				if (inputValue != null) {
-//					bufferData.txt = inputValue;
-//				}
-//	
-//			}
-//			return false;
-//		}
-//		else
-//		{
-//			commandType = "drawing";
-//			return true;
-//		}		
-//	}
-	
-	private void CreateNewByClick()
-	{
-		//应该单独做一个不可拖动的绘制类型.由点击事件进行触发.
-		//并且只会让点击事件进行捕捉.忽视其他的
-		//并且它的数据里面,应该只有一个起点.它是通过起点绘制的
-		//如果想让的边框绘制具有通用性,那么就需要计算出来合适的finalend数值		
-		ShapeInside b = (ShapeInside)FindDrawWhat(1);// 将将要绘制的图案给过去.
-		if(!b.GetIsDrug())
-		{
-			//SetStartPosBuffer
+	private void CreateNewByClick() {
+		// 应该单独做一个不可拖动的绘制类型.由点击事件进行触发.
+		// 并且只会让点击事件进行捕捉.忽视其他的
+		// 并且它的数据里面,应该只有一个起点.它是通过起点绘制的
+		// 如果想让的边框绘制具有通用性,那么就需要计算出来合适的finalend数值
+		ShapeInside b = (ShapeInside) FindDrawWhat(1);// 将将要绘制的图案给过去.
+		if (!b.GetIsDrug()) {
+			// SetStartPosBuffer
 			if (nowDrawWhat == "drawstring") {
 				String inputValue = JOptionPane.showInputDialog("Please input a value");
 				if (inputValue != null) {
 					bufferData.txt = inputValue;
-					bufferData.startX = bufferData.endX;// 设置起始坐标.
-					bufferData.startY = bufferData.endY;// 设置起始坐标.
+					bufferData.SaveBufferStart();
 					current = b;// 变为可操作状态
-					ShapeBox s = (ShapeBox)FindDrawWhat(0);// 添加box
+					ShapeBox s = (ShapeBox) FindDrawWhat(0);// 添加box
 					b.SetBox(s);
 					SaveToShapes(b, s); // 储存
-					//BufferToShape
-					BufferToShapeWhenNew();// 更新坐标
-					//
-					BufferToShapeWhenDraw();// 更新end坐标数据
+					// BufferToShape
+					int width = bufferData.txt.length() * 8;
+					int height = 10;
+					bufferData.BufferToShapeStartDiff(width,height);// 更新坐标
+					bufferData.BufferAttrToShape();
+					bufferData.BufferToShapeEndDiff(width,height);// 更新end坐标数据
 					commandType = "drawclick";
-					BufferToShapeWhenDraw();
 				}
 			}
 		}
 	}
-	
-	//生成一个绘制的过程.
-	private void CreateNewByDrug()
-	{
-		ShapeInside b = (ShapeInside)FindDrawWhat(1);// 将将要绘制的图案给过去.
-		if(b.GetIsDrug())
-		{
-			//SetStartPosBuffer
-			bufferData.startX = bufferData.endX;// 设置起始坐标.
-			bufferData.startY = bufferData.endY;// 设置起始坐标.
+
+	// 生成一个绘制的过程.
+	private void CreateNewByDrug() {
+		ShapeInside b = (ShapeInside) FindDrawWhat(1);// 将将要绘制的图案给过去.
+		if (b.GetIsDrug()) {
+			// SetStartPosBuffer
+			bufferData.SaveBufferStart();
 			current = b;// 变为可操作状态
 			ShapeBox s = (ShapeBox)FindDrawWhat(0);// 添加box
 			b.SetBox(s);
 			SaveToShapes(b, s); // 储存
-			BufferToShapeWhenNew();// 更新坐标
-			BufferToShapeWhenDraw();// 更新end坐标数据
+			bufferData.BufferToShapeWhenNew();// 更新坐标
+			bufferData.BufferAttrToShape();
+			bufferData.BufferToShapeWhenDrug();// 更新end坐标数据
 			commandType = "drawing";
-		}			
+		}
 	}
 
 	// 这里处理来自control的事件信息.根据当前状态来相应这些事件.
@@ -283,27 +334,26 @@ public class Model {
 	// 抬起 4
 	// 左单击 5
 	// 右双击 6
-	private void ChangeTypeByMouse(int mouseType){
+	private void ChangeTypeByMouse(int mouseType) {
 		// 完成了选择
-		if (commandType.equals("choosed")) {
+		if (commandType.equals("choosed"))
+		{
 			// 左键按下并发生移动
-			if (mouseType == 2) 
-			{
+			if (mouseType == 2) {
 				// 判断击中点位置.
 				if (ClickOnChoosed()) {
 					// 准备移动的操作
 					commandType = "moving";
-					//SetStartPosBuffer
-					bufferData.startX = bufferData.endX;// 设置起始坐标.
-					bufferData.startY = bufferData.endY;// 设置起始坐标.
 					StopChoosing();
+					bufferData.SaveBufferStart();
 					for (ShapeInside shape : choosenShapeInside.keySet()) {
 						// 初始化监测位移的变量.
 						shape.setMoveOrig();
 					}
 				} else {
 					CancelChoose();// 如果没有shift,如果有shift去做排除这个元素的操作.
-					commandType = "tochoose";
+					//commandType = "tochoose";
+					NewChooseRange();
 				}
 
 			}
@@ -323,7 +373,7 @@ public class Model {
 			if (mouseType == 2) {
 				CreateNewByDrug();
 			}
-			//点击
+			// 点击
 			else if (mouseType == 5) {
 				CreateNewByClick();
 			}
@@ -331,22 +381,15 @@ public class Model {
 		// 正要选择
 		else if (commandType.equals("tochoose")) {
 			// 左键按下并发生移动
-			if (mouseType == 2) {
-				bufferData.startX = bufferData.endX;// 设置起始坐标.
-				bufferData.startY = bufferData.endY;// 设置起始坐标.
-				ShapeBox b = (ShapeBox)FindDrawWhat(0);// 将将要绘制的图案给过去.
-				current = b;// 变为可操作状态
-				chooseRanges.add(b);// 储存
-				current.SetStart(bufferData.startX, bufferData.startY);// 设置初始坐标
-				BufferToShapeWhenChoosing();// 更新end坐标数据
-				commandType = "choosing";
+			if (mouseType == 2) {		
+				NewChooseRange();
 			}
 		}
 		// 正在选择中
 		else if (commandType.equals("choosing")) {
 			// 移动
 			if (mouseType == 3) {
-				BufferToShapeWhenChoosing();
+				bufferData.BufferToShapeWhenDrug();
 			} // 抬起
 			else if (mouseType == 4) {
 				current = null;
@@ -354,7 +397,7 @@ public class Model {
 				for (int i = 0; i < chooseRanges.size(); i++) {
 					CancelChoose();// 如果没有按下shift就清空,可以在前面就判定好
 					commandType = "tochoose";
-					ShapeBox chooseRange = (ShapeBox) chooseRanges.get(i);
+					ChooseBox chooseRange = (ChooseBox) chooseRanges.get(i);
 					for (ShapeInside shape : draws.keySet()) {
 						ShapeBox testBox = (ShapeBox) draws.get(shape);
 						if (chooseRange.IfCollision(testBox)) {
@@ -371,26 +414,22 @@ public class Model {
 				StopChoosing();
 				// current = null;
 			}
-		}
-		else if (commandType.equals("drawing")) {
+		} else if (commandType.equals("drawing")) {
 			// 移动
 			if (mouseType == 3) {
-				BufferToShapeWhenDraw();
+				bufferData.BufferToShapeWhenDrug();
 			} // 抬起
 			else if (mouseType == 4) {
 				current = null;
 				commandType = "todraw";
 			}
-		}
-		else if (commandType.equals("drawclick"))
-		{
+		} else if (commandType.equals("drawclick")) {
 			commandType = "todraw";
 			current = null;
-		}
-		else if (commandType.equals("moving")) {
+		} else if (commandType.equals("moving")) {
 			// 移动
 			if (mouseType == 3) {
-				BufferToShapeWhenMove();
+				bufferData.BufferToShapeWhenMove();
 			} // 抬起
 			else if (mouseType == 4) {
 				commandType = "choosed";
@@ -399,10 +438,23 @@ public class Model {
 		}
 	}
 
+	//将状态机出来的函数保存下来,这样可以实现切换.
+	//这个函数用来生成新的选区
+	private void NewChooseRange()
+	{
+		bufferData.SaveBufferStart();
+		ChooseBox b = (ChooseBox) FindDrawWhat(2);// 将将要绘制的图案给过去.
+		current = b;// 变为可操作状态
+		chooseRanges.add(b);// 储存
+		bufferData.BufferToShapeWhenNew();
+		bufferData.BufferToShapeWhenDrug();// 更新end坐标数据
+		commandType = "choosing";
+	}
+
 	// 遍历所有的选框.看测试点是否落在上面
 	private Boolean ClickOnChoosed() {
 		// ShapeBox testPoint = (ShapeBox)current;
-		ShapeBox testPoint = new ShapeBox(bufferData.endX, bufferData.endY);
+		ChooseBox testPoint = new ChooseBox(bufferData.endX, bufferData.endY);
 		for (ShapeInside choosen : choosenShapeInside.keySet()) {
 			ShapeBox choosenBox = (ShapeBox) choosenShapeInside.get(choosen);
 			if (testPoint.IfCollision(choosenBox)) {
@@ -412,51 +464,10 @@ public class Model {
 		return false;
 	}
 
-	// 接受到有效鼠标点,更新数据.
-	private void BufferStartPos(int endX, int endY) {
-		bufferData.endX = endX;
-		bufferData.endY = endY;
-		// SetEndPos(endX,endY);
-	}
-
-	// 设置终点坐标(每次都调用,坐标设置)
-	private void BufferToShapeWhenDraw() {
-		current.SetEnd(bufferData.endX, bufferData.endY);
-		draws.get(current).SetEnd(bufferData.endX, bufferData.endY);
-	}
-
-	// 设置终点坐标(每次都调用,坐标设置)
-	private void BufferToShapeWhenChoosing() {
-		current.SetEnd(bufferData.endX, bufferData.endY);
-	}
-
-	// 更新所有选中单位的坐标,用坐标变化绝对值来做.
-	// 绝对值的计算方式是用现在的坐标减去原始坐标.
-	private void BufferToShapeWhenMove() {
-
-		int dertaX = bufferData.endX - bufferData.startX;
-		int dertaY = bufferData.endY - bufferData.startY;
-		// 遍历并更新.
-		for (ShapeInside shape : choosenShapeInside.keySet()) {
-			shape.move(dertaX, dertaY);
-			;
-		}
-	}
-
-	// buffer写入shape坐标.在new的时候调用一次
-	private void BufferToShapeWhenNew() {
-		// 设置起点坐标
-		current.SetStart(bufferData.startX, bufferData.startY);
-		// 设置好边框的起点坐标
-		draws.get(current).SetStart(bufferData.startX, bufferData.startY);
-		//
-		ShapeInside s= (ShapeInside)current;
-		s.SetBold(bufferData.bold);
-		s.SetColor(bufferData.color);
-		s.SetString(bufferData.txt);
-	}
-
-
+	// // 设置终点坐标(每次都调用,坐标设置)
+	// private void BufferToShapeWhenChoosing() {
+	// current.SetEnd(bufferData.endX, bufferData.endY);
+	// }
 
 	// 一个临时的内部接口,保存到数据中
 	private void SaveToShapes(ShapeInside picture, ShapeBox box) {
@@ -464,8 +475,8 @@ public class Model {
 	}
 
 	// 接收鼠标事件的接口
-	public void SendMouseEvent(MouseEventData mouseData){
-		BufferStartPos(mouseData.Get(1), mouseData.Get(2));
+	public void SendMouseEvent(MouseEventData mouseData) {
+		bufferData.SaveBufferEnd(mouseData.Get(1), mouseData.Get(2));
 		// 判断对点击事件是否感兴趣
 		ChangeTypeByMouse(mouseData.Get(0));
 		UpdataView();
@@ -475,7 +486,7 @@ public class Model {
 	// 判断击中点位置是否在选区里面
 	private void RemoveAndDraw() {
 		// 1当前点击的物体删除掉.
-		ShapeBox testPoint = new ShapeBox(bufferData.endX, bufferData.endY);
+		ChooseBox testPoint = new ChooseBox(bufferData.endX, bufferData.endY);
 		for (ShapeInside choosen : choosenShapeInside.keySet()) {
 			ShapeBox choosenBox = (ShapeBox) choosenShapeInside.get(choosen);
 			if (testPoint.IfCollision(choosenBox)) {
@@ -487,18 +498,23 @@ public class Model {
 	}
 
 	// create的时候,获得已经预设好的对象的浅拷贝
-	//图形用这里面拿到的.选框使用rect.外边框使用
-	//图形.选框.外边框
-	private MyShape FindDrawWhat(int type){
-		if(type == 1)
+	// 图形用这里面拿到的.选框使用rect.外边框使用
+	// 图形.选框.外边框
+	private MyShape FindDrawWhat(int type) {
+		if (type == 1) {
+			ShapeInside s = (ShapeInside) hashShape.get(nowDrawWhat);
+			return s.clone();
+		} else if(type == 2) {
+			ChooseBox s = (ChooseBox) hashShape.get("choosebox");
+			return s.clone();
+		}else if(type == 0)
 		{
-			ShapeInside s =(ShapeInside)hashShape.get(nowDrawWhat);
+			ShapeBox s = (ShapeBox) hashShape.get("drawbox");
 			return s.clone();
 		}
 		else
 		{
-			ShapeBox s =(ShapeBox)hashShape.get("drawbox");
-			return s.clone();
+			return null;
 		}
 	}
 
@@ -531,7 +547,10 @@ public class Model {
 		// TODO Auto-generated method stub
 		for (ShapeInside shape : draws.keySet()) {
 			shape.Draw(g);
-			draws.get(shape).Draw(g);
+			//draws.get(shape).Draw(g);
+		}
+		for (ShapeBox shapeBox : draws.values()) {
+			shapeBox.Draw(g);
 		}
 		// 绘制选择框
 		if (chooseRanges.size() != 0) {
@@ -539,5 +558,6 @@ public class Model {
 				chooseRanges.get(i).Draw(g);
 			}
 		}
+		
 	}
 }

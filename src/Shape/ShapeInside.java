@@ -22,8 +22,6 @@ public class ShapeInside extends MyShape implements Cloneable{
 	private boolean isDrug = true;
 	
 	protected String txt;
-	protected float bold;
-	protected Color color;
 	
 	public ShapeInside()
 	{
@@ -35,6 +33,7 @@ public class ShapeInside extends MyShape implements Cloneable{
 		this.isDrug = isDrug;
 	}
 	
+	//初始化的时候,将outsideBox也初始化
 	@Override
 	public void SetStart(int x, int y) {
 		// TODO Auto-generated method stub
@@ -49,6 +48,21 @@ public class ShapeInside extends MyShape implements Cloneable{
 		outsideBox.SetEnd(x, y);
 	}
 	
+	//重写这两个方法,完成外边框设置
+	public void SetStartDiff(int x, int y,int width,int height) {
+		// TODO Auto-generated method stub
+		super.SetStart(x, y);
+		outsideBox.SetStart(x, y - height);
+	}
+	
+	public void SetEndDiff(int x, int y,int width,int height) {
+		// TODO Auto-generated method stub
+		super.SetEnd(x, y);
+		outsideBox.SetEnd(x+width, y);
+	}
+	
+
+	
 
 	//当移动这个物体的时候.重置他的坐标
 	public final void setMoveOrig()
@@ -60,6 +74,8 @@ public class ShapeInside extends MyShape implements Cloneable{
 	//移动的函数
 	public final void move(int dX,int dY)
 	{
+		int x = moveX;
+		int y = moveY;
 		while(moveX !=dX)
 		{
 			if(moveX>dX)
@@ -90,21 +106,10 @@ public class ShapeInside extends MyShape implements Cloneable{
 				moveY++;
 			}
 		}
-		outsideBox.SetStart(startX, startY);
-		outsideBox.SetEnd(endX, endY);
-	}
-	
-	@Override
-	public void Draw(Graphics g) {
-		super.Draw(g);	
-		DrawAttribute(g);//在基础上会设置自定义属性
-		outsideBox.Draw(g);//默认所有shape都有.box的绘制我们暂时有这里调用	
-	}	
-	
-	protected void DrawAttribute(Graphics g) {
-		// TODO Auto-generated method stub
-		g.setColor(color);
-		((Graphics2D)g).setStroke(new BasicStroke(bold));
+		x = moveX - x;
+		y = moveY - y;
+		outsideBox.SetStart(outsideBox.startX + x, outsideBox.startY + y);
+		outsideBox.SetEnd(outsideBox.endX + x, outsideBox.endY + y);
 	}
 	
 	//设置颜色
@@ -125,22 +130,18 @@ public class ShapeInside extends MyShape implements Cloneable{
 		this.txt = txt;
 	}
 	
-	
-//	private void SetBoxPos()
-//	{
-//		outsideBox.SetPoSAndSize(startX,startY,endX,endY);
-//	}
-	
 	public boolean GetIsDrug() {
 		// TODO Auto-generated method stub
 		return isDrug;
 	}
 	@Override
 	public ShapeInside clone(){
-		ShapeInside shapeinside = null;  
+		ShapeInside shapeinside = null; 
+//		shapeinside = (ShapeInside) super.clone(); 
         try {  
         	shapeinside = (ShapeInside) super.clone();  
-        } catch (CloneNotSupportedException e) {  
+        } 
+        catch (CloneNotSupportedException e) {  
             e.printStackTrace();  
         }          
         return shapeinside;
@@ -156,7 +157,5 @@ public class ShapeInside extends MyShape implements Cloneable{
 	public void SetBox(ShapeBox s)
 	{
 		this.outsideBox = s;
-	}
-	
-	
+	}	
 }

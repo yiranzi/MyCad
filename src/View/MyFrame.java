@@ -32,10 +32,10 @@ public class MyFrame extends JFrame {
 		panel.addMouseListener(new ClickListener());
 		panel.addMouseMotionListener(new MotionListener());
 		
-		panel = new MyPanel();
-		panel.setBackground(new Color(100,250,250));
-		panels.put("buttonpanel", panel);
-		add(panel, BorderLayout.NORTH);
+		JPanel jpanel = new JPanel();
+		jpanel.setBackground(new Color(100,250,250));
+		panels.put("buttonpanel", jpanel);
+		add(jpanel, BorderLayout.NORTH);
 		
 //		panel = new MyPanel();
 //		panel.setBackground(new Color(100,25,255));
